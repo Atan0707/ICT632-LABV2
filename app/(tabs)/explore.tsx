@@ -20,7 +20,6 @@ const CATEGORIES = [
 ];
 
 export default function ExploreScreen() {
-  const privateKey = process.env.EXPO_PUBLIC_NEWS_API_KEY;
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +38,7 @@ export default function ExploreScreen() {
     
     try {
       const response = await fetch(
-        `https://newsapi.org/v2/everything?q=${category}&q=malaysia&apiKey=${privateKey}`
+        `http://192.168.1.170:3000/api/news?category=${category}`
       );
       
       if (!response.ok) {
@@ -48,10 +47,14 @@ export default function ExploreScreen() {
       
       const data = await response.json();
       
-      if (data.status === 'ok') {
+      if (data.status === 'ok' && data.articles) {
         const validArticles = data.articles.filter(
           (article: any) => article.title && article.description
         );
+        
+        if (validArticles.length === 0) {
+          throw new Error('No valid articles found');
+        }
         
         setArticles(validArticles);
       } else {
@@ -74,7 +77,7 @@ export default function ExploreScreen() {
     
     try {
       const response = await fetch(
-        `https://newsapi.org/v2/everything?q=${searchQuery}&sortBy=relevancy&apiKey=${privateKey}`
+        `http://192.168.1.170:3000/api/news?q=${searchQuery}`
       );
       
       if (!response.ok) {
@@ -83,10 +86,14 @@ export default function ExploreScreen() {
       
       const data = await response.json();
       
-      if (data.status === 'ok') {
+      if (data.status === 'ok' && data.articles) {
         const validArticles = data.articles.filter(
           (article: any) => article.title && article.description
         );
+        
+        if (validArticles.length === 0) {
+          throw new Error('No articles found for your search');
+        }
         
         setArticles(validArticles);
       } else {

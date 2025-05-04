@@ -8,7 +8,6 @@ import { NewsDetail } from '@/components/NewsDetail';
 import { Loader } from '@/components/Loader';
 
 export default function HomeScreen() {
-  const privateKey = process.env.EXPO_PUBLIC_NEWS_API_KEY;
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,9 +25,8 @@ export default function HomeScreen() {
     setError(null);
     
     try {
-      // Using the top-headlines endpoint with country set to Malaysia (my)
       const response = await fetch(
-        `https://newsapi.org/v2/everything?q=malaysia&apiKey=${privateKey}`
+        'http://192.168.1.170:3000/api/news'
       );
       
       if (!response.ok) {
@@ -37,11 +35,14 @@ export default function HomeScreen() {
       
       const data = await response.json();
       
-      if (data.status === 'ok') {
-        // Filter out articles without a title or description
+      if (data.status === 'ok' && data.articles) {
         const validArticles = data.articles.filter(
           (article: any) => article.title && article.description
         );
+        
+        if (validArticles.length === 0) {
+          throw new Error('No valid articles found');
+        }
         
         setArticles(validArticles);
       } else {
